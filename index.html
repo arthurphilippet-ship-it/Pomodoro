@@ -5,26 +5,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pomodoro</title>
 <style>
-:root{--bg:#f6f7f4;--fg:#1d2a24;--muted:#6b7a72;--work:#2f6f55;--rest:#3a6ea5;--track:#dfe5e0;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root{--bg:#f6f7f4;--fg:#1d2a24;--muted:#6b7a72;--work:#2f6f55;--rest:#3a6ea5;--track:#dfe5e0;color-scheme:light}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#16201b;--fg:#e8efea;--muted:#93a39a;--work:#5cc29a;--rest:#7fb0e6;--track:#26332d;color-scheme:dark}}
 :root[data-theme="dark"]{--bg:#16201b;--fg:#e8efea;--muted:#93a39a;--work:#5cc29a;--rest:#7fb0e6;--track:#26332d;color-scheme:dark}
 html,body{height:100%;margin:0}
 body{background:var(--bg);color:var(--fg);font-family:Georgia,'Times New Roman',serif;display:flex;align-items:center;justify-content:center}
-main{text-align:center;padding:16px;width:100%;max-width:360px}
-.ring{position:relative;width:min(70vw,260px);aspect-ratio:1;margin:0 auto 16px}
+main{text-align:center;padding:8px;width:100%}
+.ring{position:relative;width:min(70vw,44vh,260px);aspect-ratio:1;margin:0 auto 10px}
 svg{width:100%;height:100%;transform:rotate(-90deg)}
 circle{fill:none;stroke-width:10}
 .track{stroke:var(--track)}
 #arc{stroke:var(--accent,var(--work));stroke-linecap:round;transition:stroke-dashoffset .4s linear}
 .time{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-#t{font-size:clamp(40px,14vw,64px);font-varian-numeric:tabular-nums;letter-spacing:-1px}
-#mode{color:var(--muted);font-size:16px}
+#t{font-size:clamp(28px,min(12vw,9vh),56px);font-variant-numeric:tabular-nums;letter-spacing:-1px}
+#mode{color:var(--muted);font-size:14px}
 body.rest{--accent:var(--rest)}
-.btns{display:flex;gap:10px;justify-content:center}
-button{font:inherit;font-size:16px;padding:10px 20px;border-radius:999px;border:1.5px solid var(--fg);background:transparent;color:var(--fg);cursor:pointer}
+.btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+button{font:inherit;font-size:15px;padding:8px 16px;border-radius:999px;border:1.5px solid var(--fg);background:transparent;color:var(--fg);cursor:pointer}
 button.main{background:var(--accent,var(--work));border-color:var(--accent,var(--work));color:var(--bg)}
 button:focus-visible{outline:3px solid var(--accent,var(--work));outline-offset:2px}
-#count{margin-top:14px;color:var(--muted);font-size:15px}
+#count{margin-top:8px;color:var(--muted);font-size:14px}
 </style>
 </head>
 <body>
@@ -41,20 +41,30 @@ button:focus-visible{outline:3px solid var(--accent,var(--work));outline-offset:
 <div id="count">Sessions terminées : 0</div>
 </main>
 <script>
-var W=25*60,R=5*60,work=true,left=W,total=W,timer=null,done=0,end=0;
+var W=25*60,R=5*60,KEY='pomodoro-state-v1';
+var work=true,left=W,total=W,timer=null,done=0,end=0,ctx=null,C=339.3;
 var t=document.getElementById('t'),arc=document.getElementById('arc'),modeEl=document.getElementById('mode'),go=document.getElementById('go'),cnt=document.getElementById('count');
-var C=339.3,ctx=null;
 function fmt(s){var m=Math.floor(s/60),x=s%60;return String(m).padStart(2,'0')+':'+String(x).padStart(2,'0')}
-function draw(){t.textContent=fmt(left);arc.style.strokeDashoffset=C*(1-left/total);document.title=fmt(left)+' · Pomodoro'}
-function setMode(w){work=w;total=left=w?W:R;document.body.classList.toggle('rest',!w);modeEl.textContent=w?'Travail':'Pause';draw()}
+function draw(){t.textContent=fmt(left);arc.style.strokeDashoffset=C*(1-left/total);document.title=fmt(left)+' · Pomodoro';cnt.textContent='Sessions terminées : '+done}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({work:work,left:left,end:end,done:done,running:!!timer}))}catch(e){}}
+function setMode(w,keep){work=w;total=w?W:R;if(!keep)left=total;document.body.classList.toggle('rest',!w);modeEl.textContent=w?'Travail':'Pause';draw()}
 function beep(){try{ctx=ctx||new (window.AudioContext||window.webkitAudioContext)();[0,0.35,0.7].forEach(function(d){var o=ctx.createOscillator(),g=ctx.createGain();o.frequency.value=880;o.connect(g);g.connect(ctx.destination);var s=ctx.currentTime+d;g.gain.setValueAtTime(0.25,s);g.gain.exponentialRampToValueAtTime(0.001,s+0.3);o.start(s);o.stop(s+0.3)})}catch(e){}}
-function tick(){left=Math.max(0,Math.round((end-Date.now())/1000));draw();if(left<=0){beep();if(work){done++;cnt.textContent='Sessions terminées : '+done}setMode(!work);end=Date.now()+left*1000}}
-function start(){try{ctx=ctx||new (window.AudioContext||window.webkitAudioContext)();ctx.resume()}catch(e){}end=Date.now()+left*1000;timer=setInterval(tick,500);go.textContent='Pause'}
-function stop(){clearInterval(timer);timer=null;go.textContent='Reprendre'}
+function tick(){left=Math.max(0,Math.round((end-Date.now())/1000));draw();if(left<=0){beep();if(work)done++;setMode(!work);end=Date.now()+left*1000;draw()}save()}
+function run(){clearInterval(timer);timer=setInterval(tick,500);go.textContent='Pause'}
+function start(){try{ctx=ctx||new (window.AudioContext||window.webkitAudioContext)();ctx.resume()}catch(e){}end=Date.now()+left*1000;run();save()}
+function stop(){clearInterval(timer);timer=null;go.textContent='Reprendre';save()}
 go.onclick=function(){timer?stop():start()};
-document.getElementById('reset').onclick=function(){clearInterval(timer);timer=null;go.textContent='Démarrer';setMode(true)};
-document.getElementById('skip').onclick=function(){var run=!!timer;clearInterval(timer);timer=null;setMode(!work);if(run)start();else go.textContent='Démarrer'};
-draw();
+document.getElementById('reset').onclick=function(){clearInterval(timer);timer=null;go.textContent='Démarrer';setMode(true);save()};
+document.getElementById('skip').onclick=function(){var r=!!timer;clearInterval(timer);timer=null;setMode(!work);go.textContent='Démarrer';if(r)start();else save()};
+(function init(){
+var s=null;try{s=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+if(s&&typeof s.left==='number'){
+work=!!s.work;done=s.done||0;left=s.left;
+if(s.running){end=s.end;while(end<=Date.now()){if(work)done++;work=!work;end+=(work?W:R)*1000}
+left=Math.max(0,Math.round((end-Date.now())/1000));setMode(work,true);run()}
+else{setMode(work,true);go.textContent=left<total?'Reprendre':'Démarrer'}
+}else{draw()}
+})();
 </script>
 </body>
 </html>
