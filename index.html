@@ -4,51 +4,72 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pomodoro</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&display=swap">
 <style>
-:root{--bg:#f6f7f4;--fg:#1d2a24;--muted:#6b7a72;--work:#2f6f55;--rest:#3a6ea5;--track:#dfe5e0;color-scheme:light}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#16201b;--fg:#e8efea;--muted:#93a39a;--work:#5cc29a;--rest:#7fb0e6;--track:#26332d;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#16201b;--fg:#e8efea;--muted:#93a39a;--work:#5cc29a;--rest:#7fb0e6;--track:#26332d;color-scheme:dark}
+:root{--bg:#0c0907;--ink:#e9dcc3;--muted:#8d7a63;--acc:#c9a56a;color-scheme:dark}
+body.rest{--acc:#e3d3b2}
 html,body{height:100%;margin:0}
-body{background:var(--bg);color:var(--fg);font-family:Georgia,'Times New Roman',serif;display:flex;align-items:center;justify-content:center}
-main{text-align:center;padding:8px;width:100%}
-.ring{position:relative;width:min(70vw,44vh,260px);aspect-ratio:1;margin:0 auto 10px}
-svg{width:100%;height:100%;transform:rotate(-90deg)}
-circle{fill:none;stroke-width:10}
-.track{stroke:var(--track)}
-#arc{stroke:var(--accent,var(--work));stroke-linecap:round;transition:stroke-dashoffset .4s linear}
-.time{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-#t{font-size:clamp(28px,min(12vw,9vh),56px);font-variant-numeric:tabular-nums;letter-spacing:-1px}
-#mode{color:var(--muted);font-size:14px}
-body.rest{--accent:var(--rest)}
-.btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
-button{font:inherit;font-size:15px;padding:8px 16px;border-radius:999px;border:1.5px solid var(--fg);background:transparent;color:var(--fg);cursor:pointer}
-button.main{background:var(--accent,var(--work));border-color:var(--accent,var(--work));color:var(--bg)}
-button:focus-visible{outline:3px solid var(--accent,var(--work));outline-offset:2px}
-#count{margin-top:8px;color:var(--muted);font-size:14px}
+body{background:radial-gradient(ellipse at 50% 35%,#1d130d 0%,var(--bg) 70%);color:var(--ink);font-family:'Cormorant Garamond',Georgia,'Times New Roman',serif;display:flex;align-items:center;justify-content:center}
+main{text-align:center;padding:8px;width:100%;box-sizing:border-box}
+.clock{width:min(78vw,46vh,300px);aspect-ratio:1;margin:0 auto 4px;filter:drop-shadow(0 8px 18px rgba(0,0,0,.6))}
+svg{width:100%;height:100%;display:block}
+.tk{stroke:#7b6446;stroke-width:.8}
+.tk.big{stroke:var(--acc);stroke-width:1.6}
+.num{fill:var(--ink);font-size:11px;text-anchor:middle;font-family:inherit;opacity:.85}
+#arc{fill:none;stroke:var(--acc);stroke-width:4;stroke-linecap:butt;transform:rotate(-90deg);transform-origin:100px 100px;opacity:.9;transition:stroke-dashoffset .5s linear}
+#hand{transform-origin:100px 100px;transition:transform .5s linear}
+#hand line{stroke:var(--acc);stroke-width:2;stroke-linecap:round}
+#hand circle{fill:none;stroke:var(--acc);stroke-width:1.6}
+.cap{fill:var(--acc)}
+#t{font-size:clamp(32px,min(11vw,8vh),56px);font-weight:600;letter-spacing:2px;font-variant-numeric:lining-nums tabular-nums;line-height:1.1}
+#mode{color:var(--acc);font-size:14px;letter-spacing:5px;text-transform:uppercase;margin-bottom:2px}
+.btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:8px}
+button{font:inherit;font-size:14px;letter-spacing:2px;text-transform:uppercase;padding:7px 16px;border-radius:2px;border:1px solid #6a5539;background:transparent;color:var(--ink);cursor:pointer}
+button:hover{border-color:var(--acc)}
+button.main{background:var(--acc);border-color:var(--acc);color:#1a110b;font-weight:600}
+button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+#count{margin-top:8px;color:var(--muted);font-size:14px;letter-spacing:3px;text-transform:uppercase}
 </style>
 </head>
 <body>
 <main>
-<div class="ring">
-<svg viewBox="0 0 120 120"><circle class="track" cx="60" cy="60" r="54"/><circle id="arc" cx="60" cy="60" r="54" stroke-dasharray="339.3" stroke-dashoffset="0"/></svg>
-<div class="time"><div id="t">25:00</div><div id="mode">Travail</div></div>
+<div class="clock">
+<svg viewBox="0 0 200 200" role="img" aria-label="Horloge Pomodoro">
+<defs>
+<linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f0d9a0"/><stop offset=".45" stop-color="#8a6a3a"/><stop offset="1" stop-color="#d1ac6c"/></linearGradient>
+<radialGradient id="face" cx=".5" cy=".4" r=".7"><stop offset="0" stop-color="#2d1f15"/><stop offset="1" stop-color="#0f0a07"/></radialGradient>
+</defs>
+<circle cx="100" cy="100" r="97" fill="#090605" stroke="url(#gold)" stroke-width="3"/>
+<circle cx="100" cy="100" r="92" fill="url(#face)" stroke="#3a2a1b" stroke-width="1"/>
+<circle cx="100" cy="100" r="82" fill="none" stroke="#2a1d13" stroke-width="4"/>
+<circle id="arc" cx="100" cy="100" r="82" stroke-dasharray="515.22" stroke-dashoffset="0"/>
+<g id="dial"></g>
+<g id="hand"><line x1="100" y1="112" x2="100" y2="40"/><circle cx="100" cy="35" r="4.5"/></g>
+<circle class="cap" cx="100" cy="100" r="5.5"/><circle cx="100" cy="100" r="2" fill="#0f0a07"/>
+</svg>
 </div>
+<div id="mode">Travail</div>
+<div id="t">25:00</div>
 <div class="btns">
 <button class="main" id="go">Démarrer</button>
 <button id="reset">Réinitialiser</button>
 <button id="skip">Passer</button>
 </div>
-<div id="count">Sessions terminées : 0</div>
+<div id="count">Sessions · 0</div>
 </main>
 <script>
-var W=25*60,R=5*60,KEY='pomodoro-state-v1';
-var work=true,left=W,total=W,timer=null,done=0,end=0,ctx=null,C=339.3;
-var t=document.getElementById('t'),arc=document.getElementById('arc'),modeEl=document.getElementById('mode'),go=document.getElementById('go'),cnt=document.getElementById('count');
+var W=1500,R=300,KEY='pomodoro-horloge-v1',CIRC=2*Math.PI*82;
+var work=true,left=W,total=W,timer=null,done=0,end=0,ctx=null;
+var t=document.getElementById('t'),arc=document.getElementById('arc'),hand=document.getElementById('hand'),modeEl=document.getElementById('mode'),go=document.getElementById('go'),cnt=document.getElementById('count');
+(function(){var s='',i,a,r1,x,y,rom=['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
+for(i=0;i<60;i++){a=i*Math.PI/30;r1=i%5===0?66:71;s+='<line class="tk'+(i%5===0?' big':'')+'" x1="'+(100+r1*Math.sin(a)).toFixed(2)+'" y1="'+(100-r1*Math.cos(a)).toFixed(2)+'" x2="'+(100+76*Math.sin(a)).toFixed(2)+'" y2="'+(100-76*Math.cos(a)).toFixed(2)+'"/>'}
+for(i=1;i<=12;i++){a=i*Math.PI/6;x=100+55*Math.sin(a);y=100-55*Math.cos(a)+3.5;s+='<text class="num" x="'+x.toFixed(2)+'" y="'+y.toFixed(2)+'">'+rom[i-1]+'</text>'}
+document.getElementById('dial').innerHTML=s})();
 function fmt(s){var m=Math.floor(s/60),x=s%60;return String(m).padStart(2,'0')+':'+String(x).padStart(2,'0')}
-function draw(){t.textContent=fmt(left);arc.style.strokeDashoffset=C*(1-left/total);document.title=fmt(left)+' · Pomodoro';cnt.textContent='Sessions terminées : '+done}
+function draw(){t.textContent=fmt(left);arc.style.strokeDashoffset=CIRC*(1-left/3600);hand.style.transform='rotate('+(left/10)+'deg)';document.title=fmt(left)+' · Pomodoro';cnt.textContent='Sessions · '+done}
 function save(){try{localStorage.setItem(KEY,JSON.stringify({work:work,left:left,end:end,done:done,running:!!timer}))}catch(e){}}
 function setMode(w,keep){work=w;total=w?W:R;if(!keep)left=total;document.body.classList.toggle('rest',!w);modeEl.textContent=w?'Travail':'Pause';draw()}
-function beep(){try{ctx=ctx||new (window.AudioContext||window.webkitAudioContext)();[0,0.35,0.7].forEach(function(d){var o=ctx.createOscillator(),g=ctx.createGain();o.frequency.value=880;o.connect(g);g.connect(ctx.destination);var s=ctx.currentTime+d;g.gain.setValueAtTime(0.25,s);g.gain.exponentialRampToValueAtTime(0.001,s+0.3);o.start(s);o.stop(s+0.3)})}catch(e){}}
+function beep(){try{ctx=ctx||new (window.AudioContext||window.webkitAudioContext)();[0,0.35,0.7].forEach(function(d){var o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.value=660;o.connect(g);g.connect(ctx.destination);var s=ctx.currentTime+d;g.gain.setValueAtTime(0.25,s);g.gain.exponentialRampToValueAtTime(0.001,s+0.4);o.start(s);o.stop(s+0.4)})}catch(e){}}
 function tick(){left=Math.max(0,Math.round((end-Date.now())/1000));draw();if(left<=0){beep();if(work)done++;setMode(!work);end=Date.now()+left*1000;draw()}save()}
 function run(){clearInterval(timer);timer=setInterval(tick,500);go.textContent='Pause'}
 function start(){try{ctx=ctx||new (window.AudioContext||window.webkitAudioContext)();ctx.resume()}catch(e){}end=Date.now()+left*1000;run();save()}
